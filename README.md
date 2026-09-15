@@ -1,103 +1,75 @@
-Visual Token Compression for Efficient Multimodal LLMs
+# Visual Token Compression for Efficient Multimodal LLMs
 
-Research code for studying visual token compression in multimodal large language models (MLLMs), with a focus on improving computational efficiency while preserving visual-language performance.
+Research code for studying **visual token compression** in multimodal large language models (MLLMs) — reducing the number of visual tokens passed to the language model while preserving multimodal understanding.
 
-This repository is based on the publicly released VisionSelector codebase and is used as a research starting point for experimentation, adaptation, and evaluation of visual token compression methods.
+This repository is based on the publicly released **VisionSelector** codebase and serves as a research starting point for experimentation, adaptation, and evaluation of visual token compression methods.
 
-Overview
+<p align="center">
+  <img src="docs/framework.png" alt="Framework overview" width="800">
+</p>
 
-Multimodal large language models can process detailed visual information by converting images or videos into sequences of visual tokens. However, these token sequences can become computationally expensive, particularly when high-resolution images or long videos are used.
+---
 
-Visual token compression addresses this problem by reducing the number of visual tokens passed to the language model while attempting to preserve the information most relevant to the downstream task.
+## Overview
 
-This repository explores this problem through experiments with learnable and non-learnable token selection strategies.
+Multimodal LLMs process detailed visual information by converting images or videos into sequences of visual tokens. These sequences can become computationally expensive, especially with high-resolution images or long videos.
 
-The main research direction is:
+Visual token compression addresses this by reducing the number of visual tokens passed to the language model while trying to preserve the information most relevant to the downstream task.
 
-How can visual token sequences be compressed efficiently without substantially degrading multimodal understanding?
+This repository explores the problem through experiments with **learnable** and **non-learnable** token selection strategies, and currently supports **Qwen2.5-VL** and **LLaVA-OneVision**.
 
-The codebase currently supports experimentation with visual token compression in multimodal models including Qwen2.5-VL and LLaVA-OneVision.
+> **Core research question:** How can visual token sequences be compressed efficiently without substantially degrading multimodal understanding?
 
-Research Focus
+## Research Focus
 
-The experiments in this repository investigate:
+- Visual token selection and pruning
+- Token compression for multimodal LLMs
+- Efficient multimodal inference
+- Retention-rate vs. performance trade-offs
+- Computational and memory efficiency
+- Learnable, importance-based token selection
+- Comparison across token compression strategies
+- Evaluation of compressed multimodal models
 
-Visual token selection and pruning
-Token compression for multimodal LLMs
-Efficient multimodal inference
-Retention-rate vs. performance trade-offs
-Computational and memory efficiency
-Learnable importance-based token selection
-Comparison between different token compression strategies
-Evaluation of compressed multimodal models
+The broader goal is to understand what visual information can be removed — and what must be preserved — when reducing the computational cost of MLLMs.
 
-The broader goal is to understand what visual information can be removed and what information should be preserved when reducing the computational cost of MLLMs.
+## Relationship to VisionSelector
 
-Relationship to VisionSelector
+This repository builds on the publicly available implementation of **VisionSelector: End-to-End Learnable Visual Token Compression for Efficient Multimodal LLMs**, which introduced an end-to-end learnable framework including a differentiable Top-K selection mechanism, curriculum-based training, and a learnable importance scorer.
 
-This repository builds upon the publicly available implementation of:
+VisionSelector is used here as a research baseline and implementation starting point. This repository is an **experimental / extended codebase**, not a reimplementation claiming ownership of the original method. For the original method, results, and publication, please refer to the original VisionSelector project and paper.
 
-VisionSelector: End-to-End Learnable Visual Token Compression for Efficient Multimodal LLMs
+## Repository Structure
 
-The original project introduced an end-to-end learnable framework for visual token compression, including a differentiable Top-K selection mechanism, curriculum-based training, and a learnable importance scorer.
-
-The original project is used here as a research baseline and implementation starting point.
-
-This repository should therefore be understood as an experimental/extended codebase rather than a reimplementation claiming ownership of the original VisionSelector method.
-
-For the original method, results, and publication, please refer to the original VisionSelector project and paper.
-
-Repository Structure
+```
 .
-├── datasets/
-│   └── Dataset preparation and annotation utilities
-│
-├── docs/
-│   └── Documentation and figures
-│
-├── qwen-vl-finetune/
-│   └── Qwen2.5-VL training and token-selection experiments
-│
-├── qwen-evaluation/
-│   └── Evaluation and inference scripts
-│
-├── qwen-vl-utils/
-│   └── Supporting utilities
-│
-├── llava-ov-15/
-│   └── LLaVA-OneVision-1.5 experiments
-│
-├── lmms-eval/
-│   └── Multimodal benchmark evaluation
-│
+├── datasets/            # Dataset preparation and annotation utilities
+├── docs/                # Documentation and figures
+├── qwen-vl-finetune/    # Qwen2.5-VL training and token-selection experiments
+├── qwen-evaluation/     # Evaluation and inference scripts
+├── qwen-vl-utils/       # Supporting utilities
+├── llava-ov-15/         # LLaVA-OneVision-1.5 experiments
+├── lmms-eval/           # Multimodal benchmark evaluation
 ├── requirements.txt
 └── README.md
-Dataset Preparation
+```
 
-The original experimental pipeline uses datasets from the Cambrian-10M dataset collection.
+## Dataset Preparation
 
-The required datasets include:
+The experimental pipeline uses datasets from the **Cambrian-10M** dataset collection:
 
-Dataset	Approx. Size
-OCR-VQA	~80K
-ChartQA	~28K
-TextVQA	~21K
-COCO	~364K
+| Dataset  | Approx. Size |
+|----------|-------------:|
+| OCR-VQA  | ~80K         |
+| ChartQA  | ~28K         |
+| TextVQA  | ~21K         |
+| COCO     | ~364K        |
 
-The corresponding annotation file used by the original pipeline is:
+The corresponding annotation file is `Cambrian737k.jsonl`. These datasets are **not included** in this repository and should be obtained from their respective public sources.
 
-Cambrian737k.jsonl
+After downloading, place them inside `datasets/` with roughly this structure:
 
-These datasets are not included in this repository and should be obtained from their respective public sources.
-
-Dataset Preparation
-
-After downloading the required datasets, place them inside:
-
-datasets/
-
-The expected structure is approximately:
-
+```
 datasets/
 ├── ocr_vqa/
 ├── ocr_vqa_cambrian.jsonl
@@ -108,168 +80,106 @@ datasets/
 ├── coco/
 ├── coco_cambrian.jsonl
 └── textvqa_ocrvqa_cambrian.jsonl
+```
 
-The annotation-processing utilities can then be used to prepare the required JSONL files.
+Then prepare the annotation files:
 
+```bash
 python datasets/filter_json.py
 python datasets/sample_merge_json_llavaov.py
+```
 
-The exact commands and paths may need to be adjusted according to the local dataset configuration.
+Exact commands and paths may need to be adjusted for your local dataset configuration.
 
-Environment Setup
+## Environment Setup
 
-The experiments were developed around a Python/Conda environment.
-
-Create an environment with:
-
+```bash
 conda create -n vision-compression python=3.10
 conda activate vision-compression
-
-Install the project dependencies:
-
 pip install -r requirements.txt
+```
 
-For the Qwen2.5-VL pipeline:
+**Qwen2.5-VL pipeline:**
 
+```bash
 pip install qwen-vl-utils[decord]
 pip install transformers==4.50.0
+```
 
-For the LLaVA-OneVision pipeline, the required Transformers version may differ from the Qwen environment.
+**LLaVA-OneVision pipeline** (requires a different Transformers version):
 
+```bash
 pip uninstall transformers
 pip install transformers==4.53.1
-Qwen2.5-VL Experiments
+```
 
-The repository contains an experimental pipeline for studying visual token compression with Qwen2.5-VL.
+## Qwen2.5-VL Experiments
 
-Training
+### Training
 
-Training scripts are available under:
-
-qwen-vl-finetune/
-
-For example:
-
+```bash
 cd qwen-vl-finetune
-
-The available scripts include configurations for different experimental settings:
-
-bash scripts/sft_7b.sh
-bash scripts/sft_3b.sh
+bash scripts/sft_7b.sh       # or
+bash scripts/sft_3b.sh       # or
 bash scripts/sft_dynamic.sh
+```
 
-These scripts correspond to the configurations inherited from the underlying research codebase and may be modified for further experiments.
+### Evaluation
 
-Evaluation
-
-Evaluation utilities are provided through the lmms-eval and qwen-evaluation components.
-
-Install the evaluation package:
-
+```bash
 cd lmms-eval
 pip install -e .
 cd ../qwen-evaluation
 
-Evaluation scripts can be used to compare:
+bash run_token_compression.sh   # general token compression
+bash run_selector.sh            # selector-based evaluation
+bash run_dynamic_qwen.sh        # dynamic token selection
+```
 
-Original model inference
-Token compression baselines
-Learnable token selection
-Other supported token pruning approaches
+### Inference
 
-Example:
-
-bash run_token_compression.sh
-
-For selector-based evaluation:
-
-bash run_selector.sh
-
-For dynamic token selection experiments:
-
-bash run_dynamic_qwen.sh
-Inference
-
-Inference experiments can be run using:
-
+```bash
 bash run_inference.sh
+```
 
-The pipeline supports experiments involving different visual token retention strategies.
+The pipeline measures how reducing the number of visual tokens affects:
 
-The goal is to measure how reducing the number of visual tokens affects:
+- Multimodal task performance
+- Number of visual tokens
+- Inference latency
+- Prefill time
+- GPU memory consumption
 
-Multimodal task performance
-Number of visual tokens
-Inference latency
-Prefill time
-GPU memory consumption
-Efficiency Evaluation
-
-For efficiency experiments, the evaluation pipeline can record:
-
-Maximum GPU Memory
-Prefill Time
-Latency
-Number of Visual Tokens
+### Efficiency Evaluation
 
 Enable timing and resource measurements with:
 
+```bash
 EVAL_TIME=True
+```
 
-These measurements can be used to analyze the trade-off between visual token retention and computational efficiency.
+This records maximum GPU memory, prefill time, latency, and number of visual tokens — used to analyze the trade-off between token retention and computational efficiency.
 
-LLaVA-OneVision Experiments
+## LLaVA-OneVision Experiments
 
-The repository also contains an experimental implementation for LLaVA-OneVision-1.5 under:
+Install the required environment and configure the appropriate Transformers version before running.
 
-llava-ov-15/
-
-Install the required environment dependencies and configure the appropriate Transformers version before running the experiments.
-
-Training
+```bash
 cd llava-ov-15
-bash scripts/finetune_selector_8b.sh
-Evaluation
-bash run_ov_token_compression.sh
+bash scripts/finetune_selector_8b.sh   # training
+bash run_ov_token_compression.sh       # evaluation
+bash run_ov_selector.sh                # selector-based evaluation
+bash run_ov_inference.sh               # inference
+```
 
-Selector-based evaluation:
+## Experimental Directions
 
-bash run_ov_selector.sh
-Inference
-bash run_ov_inference.sh
-Experimental Direction
+1. **Token retention** — model performance across budgets: `100% → 75% → 50% → 25% → 10%`
+2. **Selection strategies** — comparing approaches for choosing which tokens to retain
+3. **Efficiency** — token reduction vs. GPU memory, latency, prefill time, throughput
+4. **Generalization** — does a selector trained at one retention rate hold up at others?
+5. **Model comparison** — evaluating compression across multiple multimodal architectures, not just one backbone
 
-The codebase is intended to support further investigation into efficient multimodal models.
+## Current Status
 
-Potential experimental directions include:
-
-1. Token Retention
-
-Study model performance under different visual token budgets:
-
-100% → 75% → 50% → 25% → 10%
-2. Selection Strategies
-
-Compare different approaches for determining which visual tokens should be retained.
-
-3. Efficiency
-
-Measure the relationship between token reduction and:
-
-GPU memory
-Latency
-Prefill time
-Throughput
-4. Generalization
-
-Investigate whether a token-selection strategy trained under one compression setting remains effective when evaluated at different retention rates.
-
-5. Model Comparison
-
-Evaluate token compression across different multimodal architectures rather than restricting experiments to a single backbone.
-
-Current Status
-
-This repository is a research and experimentation codebase.
-
-New experiments, modifications, and findings will be documented as the research progresses.
+This is an active research and experimentation codebase. New experiments, modifications, and findings will be documented as the research progresses.
